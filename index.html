@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة أبرار الحربي | مراجعة Circularly and Doubly Linked Lists</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+tailwind.config = { theme:{ extend:{ colors:{ gold:{DEFAULT:'#D4AF37',light:'#F5D67B',dark:'#8C6A00'}, royal:{900:'#080D29',800:'#0E1642',700:'#162066',600:'#1E2C8A'} }, fontFamily:{ cairo:['Cairo','sans-serif'], taj:['Tajawal','sans-serif'], pop:['Poppins','sans-serif'] } } } }
+</script>
+<style>
+*{font-family:'Cairo','Tajawal',sans-serif}
+body{background:#070B24;color:#fff;overflow-x:hidden}
+.gold-text{background:linear-gradient(135deg,#FFF6C8 0%,#F5D67B 20%,#D4AF37 45%,#FFF0A0 60%,#B8860B 80%,#F5D67B 100%);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% auto;animation:shine 4s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.glass{background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.03));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(212,175,55,.28)}
+.gold-border{position:relative;border:1px solid rgba(212,175,55,.5)}
+.gold-border::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,#F5D67B,#8C6A00,#FFF6C8,#B8860B);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.9}
+.btn-gold{background:linear-gradient(135deg,#F8E28A 0%,#D4AF37 35%,#A67C00 70%,#F5D67B 100%);background-size:200% auto;color:#1a1400;font-weight:900;box-shadow:0 8px 30px rgba(212,175,55,.4),inset 0 1px 0 rgba(255,255,255,.7);transition:.35s}
+.btn-gold:hover{background-position:left center;transform:translateY(-2px) scale(1.02);box-shadow:0 15px 45px rgba(212,175,55,.6)}
+.btn-ghost{border:1px solid rgba(212,175,55,.4);transition:.3s}
+.btn-ghost:hover{background:rgba(212,175,55,.12);border-color:#D4AF37}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.35;pointer-events:none;z-index:0;animation:float 12s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-40px) scale(1.08)}}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.opt{transition:.25s;text-align:right;width:100%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;position:relative;overflow:hidden}
+.opt:hover:not(:disabled){border-color:#D4AF37;background:rgba(212,175,55,.1);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:#22c55e!important;background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(34,197,94,.1))!important;box-shadow:0 0 25px rgba(34,197,94,.4)}
+.opt.wrong{border-color:#ef4444!important;background:linear-gradient(135deg,rgba(239,68,68,.25),rgba(239,68,68,.1))!important;box-shadow:0 0 25px rgba(239,68,68,.35)}
+.opt.dim{opacity:.45}
+.opt-letter{flex-shrink:0;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;background:linear-gradient(135deg,#D4AF37,#8C6A00);color:#1a1400}
+.shake{animation:shake .5s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+.pop{animation:pop .5s cubic-bezier(.68,-.55,.265,1.55)}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.glow-pulse{animation:glowP 2s infinite}
+@keyframes glowP{0%,100%{box-shadow:0 0 20px rgba(212,175,55,.4)}50%{box-shadow:0 0 45px rgba(212,175,55,.8)}}
+.progress-gold{background:linear-gradient(90deg,#8C6A00,#D4AF37,#FFF6C8,#D4AF37);background-size:200% auto;animation:shine 2.5s linear infinite}
+.pal-btn{width:42px;height:42px;border-radius:12px;font-weight:800;font-size:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);transition:.25s}
+.pal-btn:hover{transform:scale(1.1);border-color:#D4AF37}
+.pal-btn.current{border:2px solid #F5D67B;box-shadow:0 0 18px rgba(212,175,55,.7);transform:scale(1.12)}
+.pal-btn.ok{background:linear-gradient(135deg,#16a34a,#15803d);border-color:#22c55e}
+.pal-btn.bad{background:linear-gradient(135deg,#dc2626,#991b1b);border-color:#ef4444}
+.pal-btn.skip{background:rgba(245,214,123,.2);border-color:#D4AF37}
+.ar-box{background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(212,175,55,.06));border:1px dashed rgba(212,175,55,.6);border-radius:14px}
+.feedback-ok{background:linear-gradient(135deg,rgba(34,197,94,.2),rgba(34,197,94,.08));border:1px solid #22c55e}
+.feedback-bad{background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(239,68,68,.08));border:1px solid #ef4444}
+.score-ring{transform:rotate(-90deg)}
+.score-ring circle{transition:stroke-dashoffset 2s ease}
+.trophy-float{animation:trophyF 3s ease-in-out infinite}
+@keyframes trophyF{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(3deg)}}
+#celebrateOverlay{transition:.4s}
+.crown-shine{position:relative;overflow:hidden}
+.crown-shine::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg);animation:sheen 3s infinite}
+@keyframes sheen{0%{left:-80%}60%,100%{left:130%}}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#0E1642}
+::-webkit-scrollbar-thumb{background:linear-gradient(#D4AF37,#8C6A00);border-radius:10px}
+.toast{animation:slideIn .4s cubic-bezier(.68,-.55,.265,1.55)}
+@keyframes slideIn{from{transform:translateY(30px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@media print{body *{visibility:hidden}#reportSection,#reportSection *{visibility:visible}#reportSection{position:absolute;top:0;right:0;left:0;background:#fff!important;color:#000!important} .no-print{display:none!important}}
+.chapter-badge{background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.05));border:1px solid rgba(212,175,55,.4)}
+.hero-pattern{background-image:radial-gradient(rgba(212,175,55,.15) 1px,transparent 1px);background-size:22px 22px}
+.streak-fire{animation:fire .8s infinite alternate}
+@keyframes fire{from{transform:scale(1)}to{transform:scale(1.15) rotate(-5deg)}}
+
+.cm-node{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 12px;transition:.25s}
+.cm-node:hover{border-color:#D4AF37;background:rgba(212,175,55,.1);transform:translateY(-2px)}
+.cm-node b{display:block;color:#F5D67B;font-family:'Poppins','Cairo',sans-serif;font-size:13.5px;direction:ltr;text-align:left}
+.cm-node span{display:block;font-size:12.5px;line-height:1.75;color:rgba(255,255,255,.82);margin-top:2px}
+.cm-card{position:relative;border-radius:22px;padding:18px;transition:.3s}
+.cm-card::before{content:'';position:absolute;top:-22px;right:50%;width:2px;height:22px;background:linear-gradient(#D4AF37,transparent);opacity:.7}
+.cm-card.done{box-shadow:0 0 30px rgba(34,197,94,.35);border-color:#22c55e!important}
+.cm-flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;direction:ltr;font-family:'Poppins',sans-serif;font-weight:600;font-size:12.5px}
+.cm-flow .st{padding:7px 12px;border-radius:12px;background:linear-gradient(135deg,#1E2C8A,#162066);border:1px solid rgba(212,175,55,.5)}
+.cm-flow .ar{color:#F5D67B;font-weight:900}
+@keyframes pulseLine{0%,100%{opacity:.5}50%{opacity:1}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="blob" style="width:520px;height:520px;background:#D4AF37;top:-150px;right:-150px"></div>
+<div class="blob" style="width:420px;height:420px;background:#1E2C8A;bottom:10%;left:-120px;animation-delay:2s"></div>
+<div class="blob" style="width:300px;height:300px;background:#7C3AED;top:40%;right:30%;opacity:.2;animation-delay:4s"></div>
+
+<!-- PRELOADER -->
+<div id="preloader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070B24] transition-opacity duration-700">
+<div class="w-24 h-24 rounded-3xl btn-gold flex items-center justify-center text-5xl glow-pulse">👑</div>
+<h1 class="mt-6 text-2xl font-black gold-text">منصة أبرار الحربي الذهبية</h1>
+<p class="text-white/60 mt-2">جاري تجهيز تجربة ملكية تليق ببطلة البرمجة...</p>
+<div class="w-64 h-2 mt-6 rounded-full bg-white/10 overflow-hidden"><div id="loadBar" class="h-full progress-gold rounded-full" style="width:0%"></div></div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-50 glass border-b border-[#D4AF37]/30">
+<div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl btn-gold flex items-center justify-center text-2xl crown-shine">👑</div>
+<div><div class="font-black text-lg leading-none">أبرار <span class="gold-text">الحربي</span></div><div class="text-[12px] text-white/60">هياكل البيانات • Linked Lists • كويز التفوق</div></div>
+</div>
+<div class="hidden md:flex items-center gap-2 text-sm">
+<a href="#home" class="px-4 py-2 rounded-xl hover:bg-white/10 transition">الرئيسية</a>
+<a href="#quizSection" class="px-4 py-2 rounded-xl hover:bg-white/10 transition">الاختبار</a>
+<a href="#reportSection" class="px-4 py-2 rounded-xl hover:bg-white/10 transition">التقرير</a>
+</div>
+<div class="flex items-center gap-2">
+<div class="hidden sm:flex items-center gap-2 glass rounded-xl px-3 py-2 text-sm"><i class="fa-solid fa-bolt text-[#F5D67B]"></i><span id="hdrScore" class="font-black">0</span><span class="text-white/40">نقطة</span></div>
+<button onclick="toggleSound()" id="soundBtn" class="w-11 h-11 rounded-xl btn-ghost flex items-center justify-center text-xl">🔊</button>
+</div>
+</div>
+<div class="h-1 bg-white/10"><div id="topProgress" class="h-full progress-gold transition-all duration-500" style="width:0%"></div></div>
+</header>
+
+<!-- HERO -->
+<section id="home" class="relative z-10 max-w-7xl mx-auto px-4 pt-8 pb-2">
+<div class="grid lg:grid-cols-2 gap-6 items-stretch">
+<div class="glass gold-border rounded-3xl p-7 md:p-10 relative overflow-hidden hero-pattern flex flex-col justify-center">
+<div class="absolute top-0 left-0 w-full h-1 progress-gold"></div>
+<div class="inline-flex items-center gap-2 chapter-badge rounded-full px-4 py-2 text-sm font-bold text-[#F5D67B] self-start"><span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Circularly and Doubly Linked Lists • 40 سؤال اختيار من متعدد</div>
+<h1 class="text-3xl md:text-5xl font-black leading-[1.25] mt-5">أهلًا بالبطلة <span class="gold-text">أبرار الحربي</span> 🏆</h1>
+<div class="flex flex-wrap gap-3 mt-6">
+<button onclick="scrollToQuiz()" class="btn-gold rounded-2xl px-8 py-4 text-lg"><i class="fa-solid fa-play ml-2"></i> ابدأ الاختبار</button>
+<button onclick="translateAllToggle()" class="btn-ghost rounded-2xl px-6 py-4 font-bold">🌐 ترجمة الكل</button>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-7">
+<div class="rounded-2xl bg-white/5 border border-white/10 p-4 text-center"><div class="text-2xl font-black gold-text">40</div><div class="text-xs text-white/60 font-bold">سؤالًا اختياريًا (MCQ)</div></div>
+<div class="rounded-2xl bg-white/5 border border-white/10 p-4 text-center"><div class="text-2xl font-black gold-text" id="bestScoreHero">0%</div><div class="text-xs text-white/60 font-bold">أفضل نتيجة لكِ</div></div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="glass gold-border rounded-3xl p-6 text-center relative overflow-hidden crown-shine">
+<div class="trophy-float text-7xl">🏆</div>
+<h3 class="font-black text-xl mt-2">بطاقة البطلة الذهبية</h3>
+<div class="flex items-center justify-center gap-3 mt-4">
+<div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black btn-gold">أ</div>
+<div class="text-right"><div class="font-black">أبرار الحربي</div><div class="text-xs text-[#F5D67B] font-bold">⭐ المستوى <span id="levelNum">1</span> • <span id="xpNum">0</span> XP</div><div class="w-40 h-2 bg-white/10 rounded-full mt-2 overflow-hidden"><div id="xpBar" class="h-full progress-gold" style="width:0%"></div></div></div>
+</div>
+<div class="grid grid-cols-3 gap-2 mt-5 text-sm">
+<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="font-black text-lg" id="statCorrect">0</div><div class="text-green-400 text-xs font-bold">✅ صحيحة</div></div>
+<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="font-black text-lg" id="statWrong">0</div><div class="text-red-400 text-xs font-bold">❌ خاطئة</div></div>
+<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="font-black text-lg" id="statStreak">0 🔥</div><div class="text-orange-300 text-xs font-bold">سلسلة التوهج</div></div>
+</div>
+<div class="mt-4 flex items-center justify-center gap-2 text-sm bg-black/30 rounded-xl p-3 border border-[#D4AF37]/30"><i class="fa-regular fa-clock text-[#F5D67B]"></i> الوقت: <b id="timerHero">00:00</b> <span class="text-white/40">|</span> <span>السؤال <b id="heroQpos" class="text-[#F5D67B]">1</b> / 40</span></div>
+</div>
+
+<div class="grid grid-cols-2 gap-4">
+<button onclick="setMode('train')" id="modeTrain" class="glass rounded-2xl p-5 text-right border-2 border-[#D4AF37] transition hover:scale-[1.02]">
+<div class="text-2xl">🎓</div><div class="font-black mt-1">وضع التدريب البطولي</div><div class="text-xs text-white/60 mt-1 leading-5">محاولات للتعلم + شرح + التقييم على أول إجابة</div><div class="text-[11px] mt-2 font-black text-green-400">● مُفعّل الآن</div>
+</button>
+<button onclick="setMode('exam')" id="modeExam" class="glass rounded-2xl p-5 text-right border-2 border-transparent transition hover:scale-[1.02]">
+<div class="text-2xl">⏱️</div><div class="font-black mt-1">وضع الكويز الحقيقي</div><div class="text-xs text-white/60 mt-1 leading-5">محاولة واحدة فقط بدون رجعة مثل الاختبار</div><div class="text-[11px] mt-2 font-black text-white/40" id="examLabel">○ اضغطي للتفعيل</div>
+</button>
+</div>
+</div>
+</div>
+
+</section>
+
+<!-- QUIZ -->
+<section id="quizSection" class="relative z-10 max-w-7xl mx-auto px-4 py-6">
+<div class="grid lg:grid-cols-[1fr_300px] gap-6 items-start">
+
+<div class="glass gold-border rounded-3xl overflow-hidden">
+<div class="p-4 md:p-5 flex flex-wrap items-center justify-between gap-3 bg-black/20 border-b border-[#D4AF37]/20">
+<div class="flex items-center gap-2 flex-wrap">
+<span id="qCounter" class="btn-gold rounded-xl px-4 py-2 text-sm">السؤال 1 / 40</span>
+<span id="qPageBadge" class="rounded-xl px-3 py-2 text-sm font-bold bg-white/10 border border-white/15">📄 صفحة 3</span>
+<span id="qTypeBadge" class="rounded-xl px-3 py-2 text-sm font-bold bg-purple-500/20 border border-purple-400/40 text-purple-200">صح / خطأ</span>
+<span id="attemptBadge" class="rounded-xl px-3 py-2 text-sm font-bold bg-white/10 border border-white/15 hidden">المحاولة 2</span>
+</div>
+<div class="flex items-center gap-2">
+<button onclick="toggleBookmark()" id="bmBtn" class="w-10 h-10 rounded-xl btn-ghost flex items-center justify-center" title="حفظ في المفضلة">🤍</button>
+<button onclick="toggleTranslateCurrent()" id="trBtn" class="rounded-xl px-4 py-2.5 font-black text-sm btn-gold">🌐 ترجم</button>
+</div>
+</div>
+
+<div class="h-2 bg-white/10"><div id="quizProgress" class="h-full progress-gold transition-all duration-500" style="width:2%"></div></div>
+
+<div id="qCard" class="p-5 md:p-8">
+<div class="flex items-center gap-2 text-xs text-white/40 font-bold mb-3"><i class="fa-solid fa-book-open text-[#D4AF37]"></i> أسئلة مستخرجة من شرائح الشابتر (بالترتيب) — أجيبي لتكملي التحدي</div>
+<h2 id="qEn" dir="ltr" class="text-left font-pop font-semibold text-lg md:text-2xl leading-9 bg-black/30 border border-white/10 rounded-2xl p-5"></h2>
+<div id="qArBox" class="ar-box p-4 mt-3 hidden pop"><div class="text-[11px] font-black text-[#F5D67B] mb-1">🇸🇦 الترجمة العربية المباشرة:</div><div id="qAr" class="font-bold leading-8 text-[15px] md:text-lg"></div></div>
+<div id="optsGrid" class="grid gap-3 mt-5"></div>
+<div id="feedbackBox" class="mt-5 hidden rounded-2xl p-5 text-center font-black text-lg pop"></div>
+<div id="explainBox" class="mt-3 hidden rounded-2xl p-4 bg-blue-500/10 border border-blue-400/40 text-sm leading-7"></div>
+<div class="flex flex-wrap items-center justify-between gap-3 mt-6">
+<div class="flex gap-2">
+<button onclick="prevQ()" class="btn-ghost rounded-xl px-5 py-3 font-bold">→ السابق</button>
+<button onclick="nextQ()" class="btn-gold rounded-xl px-7 py-3">التالي ←</button>
+</div>
+<div class="flex gap-2">
+<button onclick="skipQ()" class="btn-ghost rounded-xl px-4 py-3 text-sm font-bold">⏭️ تخطي</button>
+<button onclick="confirmFinish()" class="rounded-xl px-5 py-3 text-sm font-black bg-gradient-to-l from-red-500 to-orange-500 hover:scale-105 transition shadow-lg">🏁 إنهاء و عرض النتيجة</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="flex flex-col gap-5">
+<div id="paletteCard" class="glass rounded-3xl p-5 gold-border">
+<h3 class="font-black flex items-center gap-2"><span class="text-xl">🗺️</span> خريطة المعركة <span class="text-xs font-bold text-white/40">(40 سؤالًا)</span></h3>
+<div class="flex flex-wrap gap-2 mt-3 text-[11px] font-bold">
+<button onclick="setFilter('all')" class="filter-btn px-3 py-1.5 rounded-lg bg-[#D4AF37] text-black" data-f="all">الكل</button>
+<button onclick="setFilter('un')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="un">غير مجاب</button>
+<button onclick="setFilter('ok')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="ok">صح</button>
+<button onclick="setFilter('bad')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="bad">خطأ</button>
+<button onclick="setFilter('bm')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="bm">⭐ مفضلة</button>
+</div>
+<div id="palette" class="grid grid-cols-5 gap-2 mt-4 max-h-[380px] overflow-y-auto p-1"></div>
+<div class="mt-4 text-xs leading-6 text-white/60 bg-black/30 rounded-xl p-3 border border-white/10">🟩 صح من أول مرة • 🟥 يحتاج مراجعة • 🟨 متخطّى • ✨ الذهبي = سؤالك الحالي<br>💡 التقييم النهائي يعتمد على <b class="text-[#F5D67B]">أول إجابة</b> في وضع التدريب.</div>
+<button onclick="confirmFinish()" class="btn-gold w-full rounded-xl py-3 mt-3 font-black">📊 اعرضي تقرير أبرار النهائي</button>
+</div>
+
+<div class="glass rounded-3xl p-5">
+<h3 class="font-black">⚔️ أسلحة البطلة</h3>
+<div class="grid grid-cols-2 gap-2 mt-3 text-sm font-bold">
+<button onclick="translateAllToggle()" class="btn-ghost rounded-xl py-3">🌐 ترجمة الكل</button>
+<button onclick="toggleSound()" class="btn-ghost rounded-xl py-3">🔊 الصوت</button>
+<button onclick="restartQuiz()" class="btn-ghost rounded-xl py-3">🔄 من جديد</button>
+<button onclick="reviewBookmarks()" class="btn-ghost rounded-xl py-3">⭐ المفضلة</button>
+</div>
+<div class="mt-3 rounded-xl bg-black/30 border border-[#D4AF37]/30 p-3 text-xs leading-6"><b class="text-[#F5D67B]">نصيحة ذهبية يا أبرار:</b> استخدمي لوحة المفاتيح: <b>1-4</b> للإجابة • <b>T</b> للترجمة • <b>→ ←</b> للتنقل.</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- REPORT -->
+<section id="reportSection" class="relative z-10 max-w-7xl mx-auto px-4 py-8 hidden">
+<div class="glass gold-border rounded-3xl p-6 md:p-10 text-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1.5 progress-gold"></div>
+<div class="trophy-float text-8xl">🏆</div>
+<h2 class="text-3xl md:text-4xl font-black mt-3">تقرير البطلة <span class="gold-text">أبرار الحربي</span></h2>
+<p id="reportSubtitle" class="text-white/60 mt-2 font-bold"></p>
+<div class="grid md:grid-cols-3 gap-6 mt-8 items-center">
+<div class="flex flex-col items-center">
+<div class="relative w-52 h-52">
+<svg class="score-ring w-52 h-52" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="12"/><circle id="scoreCircle" cx="60" cy="60" r="52" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F5D67B"/><stop offset="50%" stop-color="#D4AF37"/><stop offset="100%" stop-color="#FFF6C8"/></linearGradient></defs></svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center"><div id="finalPct" class="text-4xl font-black gold-text">0%</div><div class="text-xs text-white/40 font-bold">النسبة النهائية</div></div>
+</div>
+<div id="gradeBadge" class="mt-3 px-6 py-2 rounded-full font-black btn-gold"></div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="rounded-2xl bg-green-500/10 border border-green-500/40 p-5"><div class="text-3xl font-black text-green-400" id="rCorrect">0</div><div class="text-xs font-bold text-green-300">✅ إجابات صحيحة</div></div>
+<div class="rounded-2xl bg-red-500/10 border border-red-500/40 p-5"><div class="text-3xl font-black text-red-400" id="rWrong">0</div><div class="text-xs font-bold text-red-300">❌ تحتاج مراجعة</div></div>
+<div class="rounded-2xl bg-white/5 border border-white/15 p-5"><div class="text-3xl font-black gold-text" id="rTime">00:00</div><div class="text-xs font-bold text-white/60">⏱️ زمن الإنجاز</div></div>
+<div class="rounded-2xl bg-white/5 border border-white/15 p-5"><div class="text-3xl font-black gold-text" id="rStreak">0</div><div class="text-xs font-bold text-white/60">🔥 أفضل سلسلة</div></div>
+</div>
+<div class="glass rounded-2xl p-4">
+<canvas id="chartDoughnut" height="220"></canvas>
+<div class="mt-2 text-xs text-white/40 font-bold">توزيع الأداء: صح / خطأ / متخطّى</div>
+<hr class="border-white/10 my-3">
+<canvas id="chartBars" height="220"></canvas>
+<div class="mt-2 text-xs text-white/40 font-bold">الأداء حسب القسم: القوائم المزدوجة • القوائم الدائرية والمقارنة بالمصفوفات • مراجعة وتمارين</div>
+</div>
+</div>
+<div id="finalMessage" class="mt-6 text-xl font-black leading-9 rounded-2xl p-5 feedback-ok"></div>
+<div class="mt-6 rounded-2xl p-5 border border-green-500/60 bg-green-500/10 text-center no-print">
+<div class="font-black text-lg">📲 إرسال تقرير الإجابات للدكتور محمد</div>
+<p class="text-white/70 text-sm mt-1 leading-7">اضغطي الزر لفتح واتساب برسالة جاهزة فيها نتيجتكِ وأخطاءكِ، ثم اضغطي «إرسال».</p>
+<button onclick="sendWhatsApp()" class="rounded-2xl px-8 py-4 mt-3 font-black text-lg text-white hover:scale-105 transition shadow-lg" style="background:linear-gradient(135deg,#25D366,#128C7E)"><i class="fa-brands fa-whatsapp ml-2"></i> أرسل التقرير للدكتور محمد عبر واتساب</button>
+</div>
+
+<div class="flex flex-wrap justify-center gap-3 mt-6 no-print">
+<button onclick="showOnlyWrong=false;renderReportList();toggleWrongBtn(this)" class="btn-gold rounded-xl px-6 py-3 font-black">📋 عرض الكل (40)</button>
+<button onclick="showOnlyWrong=true;renderReportList();toggleWrongBtn(this)" class="btn-ghost rounded-xl px-6 py-3 font-bold">❌ مراجعة الأخطاء فقط</button>
+<button onclick="restartQuiz()" class="btn-ghost rounded-xl px-6 py-3 font-bold">🔄 إعادة الاختبار</button>
+<button onclick="window.print()" class="btn-ghost rounded-xl px-6 py-3 font-bold">🖨️ طباعة التقرير</button>
+<button onclick="shareResult()" class="btn-ghost rounded-xl px-6 py-3 font-bold">📤 مشاركة النتيجة</button>
+<button onclick="sendWhatsApp()" class="rounded-xl px-6 py-3 font-black text-white" style="background:linear-gradient(135deg,#25D366,#128C7E)">📲 واتساب الدكتور محمد</button>
+</div>
+</div>
+
+<div class="mt-6 flex items-center gap-3">
+<div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#D4AF37] to-transparent"></div>
+<h3 class="font-black text-xl whitespace-nowrap">📝 كشف الدرجات التفصيلي <span class="text-sm text-white/40">مع الإجابات النموذجية</span></h3>
+<div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#D4AF37] to-transparent"></div>
+</div>
+<div id="reportList" class="grid gap-4 mt-5"></div>
+</section>
+
+<footer class="relative z-10 max-w-7xl mx-auto px-4 pb-10 pt-4 text-center text-white/40 text-sm">
+<div class="glass rounded-2xl p-5">صُنع بفخر 👑 للبطلة <b class="gold-text">أبرار الحربي</b> • مراجعة Circularly and Doubly Linked Lists (COCS-304 Data Structures) • بالتوفيق في الكويز يا بطلة 🚀<br><span class="text-xs">40 سؤالًا اختياريًا بالترتيب مع ترجمة فورية وتقرير ذكي</span></div>
+</footer>
+
+<!-- CELEBRATION TOAST -->
+<div id="toastWrap" class="fixed bottom-6 right-1/2 translate-x-1/2 z-[90] flex flex-col items-center gap-2 pointer-events-none w-[92%] max-w-md"></div>
+<div id="bigCheer" class="fixed inset-0 z-[95] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+<div class="glass gold-border rounded-3xl p-8 text-center max-w-md w-full pop crown-shine">
+<div class="text-7xl trophy-float" id="bigCheerEmoji">🎉</div>
+<h2 id="bigCheerTitle" class="text-2xl font-black gold-text mt-3">أحسنتِ أبرار كمّلي يا بطلة! 🏆</h2>
+<p id="bigCheerSub" class="text-white/70 font-bold mt-2 text-sm leading-7"></p>
+<button onclick="closeCheer()" class="btn-gold rounded-xl px-8 py-3 mt-5 font-black">واصلي يا بطلة 🚀</button>
+</div>
+</div>
+
+<script>
+/* ================= DATA - 40 MCQ FROM LINKED LISTS CHAPTER ================= */
+const QUESTIONS = [{"id": 1, "page": 2, "type": "mcq", "en": "Which of the following is a limitation of a singly linked list mentioned in the chapter?", "ar": "أي مما يلي من قيود القائمة المترابطة الأحادية (singly linked list) المذكورة في الشابتر؟", "opts": {"en": ["Insertion at the front takes O(n) time", "It can be traversed in both directions", "Removing a node requires a reference to the previous node", "Its size is fixed once it is created"], "ar": ["الإدراج في المقدمة يستغرق O(n)", "يمكن تمريرها في الاتجاهين", "حذف عقدة يتطلب مرجعًا للعقدة السابقة", "حجمها ثابت بعد إنشائها"]}, "correct": 2, "ex": "الشابتر يعدّد قيود القائمة الأحادية: الإدراج في المقدمة O(1) لكن في المواضع الأخرى O(n)، والإدراج مناسب فقط بعد عقدة مُشار إليها، و<b>الحذف يحتاج مرجعًا للعقدة السابقة</b>، والتمرير يتم <b>في اتجاه واحد فقط</b>. أما حجمها فديناميكي وليس ثابتًا. (صفحة 2)"}, {"id": 2, "page": 2, "type": "mcq", "en": "In a singly linked list, how does the cost of insertion at the front compare with insertion at other positions?", "ar": "في القائمة الأحادية، كيف تقارن تكلفة الإدراج في المقدمة بالإدراج في المواضع الأخرى؟", "opts": {"en": ["O(n) at the front, O(1) at other positions", "O(1) at every position", "O(n) at every position", "O(1) at the front, O(n) at other positions"], "ar": ["O(n) في المقدمة و O(1) في المواضع الأخرى", "O(1) في كل المواضع", "O(n) في كل المواضع", "O(1) في المقدمة و O(n) في المواضع الأخرى"]}, "correct": 3, "ex": "الإدراج في المقدمة <b>O(1)</b> لأن لدينا مرجع head مباشرة، أما في المواضع الأخرى فيجب المرور على العقد حتى نصل للموضع المطلوب فيصبح <b>O(n)</b>. (صفحة 2)"}, {"id": 3, "page": 2, "type": "mcq", "en": "How does a doubly linked list overcome the limitations of a singly linked list?", "ar": "كيف تتغلب القائمة المترابطة المزدوجة على قيود القائمة الأحادية؟", "opts": {"en": ["By removing the next reference from each node", "By making the last node point back to the first node", "By storing all nodes in contiguous memory", "By adding a reference in each node to the previous node"], "ar": ["بحذف المرجع next من كل عقدة", "بجعل آخر عقدة تشير إلى أول عقدة", "بتخزين كل العقد في ذاكرة متجاورة", "بإضافة مرجع في كل عقدة إلى العقدة السابقة"]}, "correct": 3, "ex": "الحل الذي يقدمه الشابتر: <b>إضافة مرجع في كل عقدة إلى العقدة السابقة</b> فنحصل على double-linked list. جعل آخر عقدة تشير للأولى هو فكرة القائمة الدائرية، والذاكرة المتجاورة صفة المصفوفات. (صفحة 2)"}, {"id": 4, "page": 3, "type": "mcq", "en": "Which are the three parts of a node in a doubly linked list?", "ar": "ما الأجزاء الثلاثة للعقدة في القائمة المزدوجة؟", "opts": {"en": ["prev, data, and next", "head, tail, and data", "cursor, data, and next", "data and next only"], "ar": ["prev و data و next", "head و tail و data", "cursor و data و next", "data و next فقط"]}, "correct": 0, "ex": "كل عقدة لها ثلاثة أجزاء: <b>prev</b> (مرجع للعقدة السابقة)، <b>data</b> (البيانات مثل الاسم أو الرقم)، <b>next</b> (مرجع للعقدة التالية). (صفحة 3)"}, {"id": 5, "page": 3, "type": "mcq", "en": "What does the prev field of a node contain?", "ar": "ماذا يحتوي الحقل prev في العقدة؟", "opts": {"en": ["A reference to the next node in the list", "A copy of the previous node's data", "A reference to the previous node in the list", "The index of the node in the list"], "ar": ["مرجعًا للعقدة التالية في القائمة", "نسخة من بيانات العقدة السابقة", "مرجعًا للعقدة السابقة في القائمة", "فهرس العقدة في القائمة"]}, "correct": 2, "ex": "الحقل prev يحتوي ببساطة <b>مرجعًا (reference) يشير إلى العقدة السابقة</b>، بينما next يشير إلى العقدة التالية. وهو مرجع وليس نسخة من البيانات ولا رقم فهرس. (صفحة 3)"}, {"id": 6, "page": 4, "type": "mcq", "en": "In addition to head, which reference variable does a doubly linked list usually keep?", "ar": "بالإضافة إلى head، أي متغير مرجعي تحتفظ به القائمة المزدوجة عادةً؟", "opts": {"en": ["cursor, pointing to any node in the list", "tail, pointing to the last node", "size, pointing to the middle node", "None; head alone is enough"], "ar": ["cursor ويشير إلى أي عقدة في القائمة", "tail ويشير إلى آخر عقدة", "size ويشير إلى العقدة الوسطى", "لا شيء؛ head وحده يكفي"]}, "correct": 1, "ex": "بجانب head الذي يشير إلى أول عقدة نحتاج متغيرًا آخر يشير إلى <b>آخر عقدة</b> وغالبًا اسمه <b>tail</b>. أما cursor فهو خاص بالقائمة الدائرية. (صفحة 4)"}, {"id": 7, "page": 4, "type": "mcq", "en": "Which operation on a doubly linked list (with head and tail) is O(n) according to the chapter?", "ar": "أي عملية على القائمة المزدوجة (التي تملك head و tail) تكون O(n) حسب الشابتر؟", "opts": {"en": ["Insertion at the front", "Insertion at the end", "Insertion at a position in the middle", "Insertion at either end"], "ar": ["الإدراج في المقدمة", "الإدراج في النهاية", "الإدراج في موضع في المنتصف", "الإدراج في أي من الطرفين"]}, "correct": 2, "ex": "الإدراج عند أي من الطرفين <b>O(1)</b> لوجود head و tail، أما الإدراج في مكان آخر فما زال <b>O(n)</b> لأننا نحتاج للمرور على العقد للوصول إلى الموضع. (صفحة 4)"}, {"id": 8, "page": 4, "type": "mcq", "en": "In a doubly linked list with more than one node, which references are null?", "ar": "في قائمة مزدوجة تحتوي أكثر من عقدة، أي المراجع تكون null؟", "opts": {"en": ["head.next and tail.prev", "head.prev and tail.prev", "head.prev and tail.next", "None; all references point to nodes"], "ar": ["head.next و tail.prev", "head.prev و tail.prev", "head.prev و tail.next", "لا شيء؛ كل المراجع تشير إلى عقد"]}, "correct": 2, "ex": "في الرسم: prev في أول عقدة (head) تساوي null، و next في آخر عقدة (tail) تساوي null. بقية المراجع تشير إلى عقد فعلية. (صفحة 4)"}, {"id": 9, "page": 5, "type": "mcq", "en": "How many fields does each DLLnode object have at least?", "ar": "كم حقلًا على الأقل في كل كائن من النوع DLLnode؟", "opts": {"en": ["Three: data, next, and prev", "Two: data and next", "One: data", "Four: data, next, prev, and head"], "ar": ["ثلاثة: data و next و prev", "اثنان: data و next", "واحد: data", "أربعة: data و next و prev و head"]}, "correct": 0, "ex": "الكلاس DLLnode فيه على الأقل ثلاثة حقول: <b>data</b> لتخزين المعلومات، <b>next</b> لربط العقد ببعضها، <b>prev</b> للربط بالعقدة السابقة. (صفحة 5)"}, {"id": 10, "page": 5, "type": "mcq", "en": "What does the constructor DLLnode(int i) do?", "ar": "ماذا يفعل الـ constructor الأول DLLnode(int i)؟", "opts": {"en": ["It creates a node whose next and prev point to itself", "It creates a node with data null and links it to the head", "It calls this(i, null, null), creating a node with data i whose next and prev are both null", "It adds the value i to the end of the list"], "ar": ["ينشئ عقدة يشير next و prev فيها إلى نفسها", "ينشئ عقدة بيانات null ويربطها بالـ head", "يستدعي this(i, null, null) فينشئ عقدة بيانات i ومرجعا next و prev فيها null", "يضيف القيمة i إلى نهاية القائمة"]}, "correct": 2, "ex": "الـ constructor الأول يمرّر القيمة إلى الثاني بالشكل <b>this(i, null, null)</b>، فتكون العقدة الجديدة غير مرتبطة بأي عقدة (next = null و prev = null). (صفحة 5)"}, {"id": 11, "page": 7, "type": "mcq", "en": "In addToFront, the node is created with new DLLnode(value, head, null). What do head and null become in the new node?", "ar": "في addToFront تُنشأ العقدة بالشكل new DLLnode(value, head, null). ماذا يصبح head و null في العقدة الجديدة؟", "opts": {"en": ["prev = head and next = null", "next = head and prev = null", "next = prev = head", "next = prev = null"], "ar": ["prev = head و next = null", "next = head و prev = null", "next = prev = head", "next = prev = null"]}, "correct": 1, "ex": "ترتيب الـ constructor الثاني هو (data, next, prev). إذن head تذهب إلى <b>next</b> (العقدة الجديدة تشير للأول القديم) و null تذهب إلى <b>prev</b> لأنها ستصبح أول عقدة. (صفحتان 5 و 7)"}, {"id": 12, "page": 7, "type": "mcq", "en": "In addToFront on a non-empty list, which statements correctly finish the insertion (in this order)?", "ar": "في addToFront على قائمة غير فارغة، أي الأوامر التالية تُكمل الإدراج بشكل صحيح (بهذا الترتيب)؟", "opts": {"en": ["head = newNode; head.prev = newNode;", "tail.next = newNode; tail = newNode;", "head.next = newNode; head = newNode;", "head.prev = newNode; head = newNode;"], "ar": ["head = newNode; head.prev = newNode;", "tail.next = newNode; tail = newNode;", "head.next = newNode; head = newNode;", "head.prev = newNode; head = newNode;"]}, "correct": 3, "ex": "نربط أولًا الـ head القديم بالعقدة الجديدة <b>head.prev = newNode</b> ثم ننقل head إلى العقدة الجديدة. لو عكسنا الترتيب لصار head.prev = newNode تُطبَّق على العقدة الجديدة نفسها وانكسر الربط الخلفي. الخيار الذي يستخدم tail هو الإضافة للنهاية. (صفحة 7)"}, {"id": 13, "page": 7, "type": "mcq", "en": "What does addToFront do when the list is empty (head == null)?", "ar": "ماذا تفعل addToFront عندما تكون القائمة فارغة (head == null)؟", "opts": {"en": ["Only head points to the new node and tail stays null", "Both head and tail point to the new node", "It throws an exception", "The new node's prev points to tail"], "ar": ["يشير head فقط إلى العقدة الجديدة ويبقى tail مساويًا null", "يشير كل من head و tail إلى العقدة الجديدة", "ترمي استثناء (exception)", "يشير prev في العقدة الجديدة إلى tail"]}, "correct": 1, "ex": "عندما تكون القائمة فارغة تصبح العقدة الجديدة هي الأولى والأخيرة معًا، لذلك الكود <b>head = tail = newNode</b>. (صفحة 7)"}, {"id": 14, "page": 8, "type": "mcq", "en": "In addToEnd, the new node is created with prev = tail. Why?", "ar": "في addToEnd تُنشأ العقدة الجديدة بحيث prev = tail. لماذا؟", "opts": {"en": ["So the new node points back to the current last node", "So the new node becomes the new head", "So tail.next becomes null", "So the new node points to the first node"], "ar": ["لكي تشير العقدة الجديدة للخلف إلى آخر عقدة حالية", "لتصبح العقدة الجديدة هي head الجديد", "ليصبح tail.next مساويًا null", "لتشير العقدة الجديدة إلى أول عقدة"]}, "correct": 0, "ex": "العقدة الجديدة ستكون بعد آخر عقدة، فنجعل <b>prev تشير إلى tail الحالي</b>. بعدها ننفذ tail.next = newNode ثم tail = newNode لإكمال الربط ولتحديث مؤشر النهاية. (صفحة 8)"}, {"id": 15, "page": 9, "type": "mcq", "en": "When inserting B between A and C (helpPtr refers to C), which statement makes A point forward to B?", "ar": "عند إدراج B بين A و C (حيث helpPtr يشير إلى C)، أي أمر يجعل A تشير للأمام إلى B؟", "opts": {"en": ["helpPtr.next.prev = newNode;", "helpPtr.prev.next = newNode;", "newNode.next = helpPtr.prev;", "helpPtr.prev = newNode.next;"], "ar": ["helpPtr.next.prev = newNode;", "helpPtr.prev.next = newNode;", "newNode.next = helpPtr.prev;", "helpPtr.prev = newNode.next;"]}, "correct": 1, "ex": "helpPtr.prev هي العقدة A، لذلك <b>helpPtr.prev.next = newNode</b> تجعل next في A تشير إلى B. وباقي الأوامر الأربعة في الشريحة: newNode.next = helpPtr و newNode.prev = helpPtr.prev و helpPtr.prev = newNode. (صفحة 9)"}, {"id": 16, "page": 9, "type": "mcq", "en": "In middle insertion, why must helpPtr.prev = newNode be executed LAST?", "ar": "في الإدراج في المنتصف، لماذا يجب تنفيذ helpPtr.prev = newNode في النهاية؟", "opts": {"en": ["Earlier statements use helpPtr.prev to reach the node before helpPtr, so changing it first would lose that reference", "Because Java requires prev to be assigned last", "Because it is the only statement that changes the list", "Because it sets newNode.next"], "ar": ["لأن الأوامر السابقة تستخدم helpPtr.prev للوصول للعقدة قبل helpPtr وتغييره أولًا يضيّع هذا المرجع", "لأن Java تشترط أن يُسنَد prev أخيرًا", "لأنه الأمر الوحيد الذي يغيّر القائمة", "لأنه يضبط newNode.next"]}, "correct": 0, "ex": "الأوامر <b>newNode.prev = helpPtr.prev</b> و <b>helpPtr.prev.next = newNode</b> تعتمد على أن helpPtr.prev ما زال يشير إلى A. لو غيّرناه أولًا إلى newNode لفقدنا الوصول للعقدة A. (صفحة 9)"}, {"id": 17, "page": 10, "type": "mcq", "en": "Which statements remove the node referenced by helpPtr from the middle of a doubly linked list?", "ar": "أي الأوامر التالية تحذف العقدة التي يشير إليها helpPtr من منتصف القائمة المزدوجة؟", "opts": {"en": ["helpPtr.next.next = helpPtr.prev; helpPtr.prev.prev = helpPtr.next;", "helpPtr.prev = helpPtr.next; helpPtr.next = helpPtr.prev;", "helpPtr = null;", "helpPtr.prev.next = helpPtr.next; helpPtr.next.prev = helpPtr.prev;"], "ar": ["helpPtr.next.next = helpPtr.prev; helpPtr.prev.prev = helpPtr.next;", "helpPtr.prev = helpPtr.next; helpPtr.next = helpPtr.prev;", "helpPtr = null;", "helpPtr.prev.next = helpPtr.next; helpPtr.next.prev = helpPtr.prev;"]}, "correct": 3, "ex": "نتجاوز العقدة المحذوفة بتحديث <b>مرجعين فقط</b>: الجار السابق يجب أن يشير للأمام إلى الجار التالي، والجار التالي يشير للخلف إلى السابق. تعيين helpPtr = null لا يفك الربط من القائمة. (صفحة 10)"}, {"id": 18, "page": 11, "type": "mcq", "en": "In delete(int value), what happens when the list has exactly one node (head == tail) and its data equals value?", "ar": "في delete(int value)، ماذا يحدث عندما تحتوي القائمة عقدة واحدة فقط (head == tail) وبياناتها تساوي value؟", "opts": {"en": ["head = tail = null", "Only head = head.next", "Only tail = tail.prev", "Nothing; a single node cannot be deleted"], "ar": ["head = tail = null", "head = head.next فقط", "tail = tail.prev فقط", "لا شيء؛ لا يمكن حذف عقدة وحيدة"]}, "correct": 0, "ex": "عند حذف العقدة الوحيدة تصبح القائمة فارغة، لذلك نجعل <b>head و tail يساويان null</b> معًا. (صفحة 11)"}, {"id": 19, "page": 11, "type": "mcq", "en": "In delete, if value is in the first node of a list with several nodes, which statements run?", "ar": "في delete، إذا كانت value في أول عقدة من قائمة فيها عدة عقد، أي أوامر تُنفَّذ؟", "opts": {"en": ["head = head.prev; head.next = null;", "tail = tail.prev; tail.next = null;", "head = head.next; head.prev = null;", "head.next = null; head = null;"], "ar": ["head = head.prev; head.next = null;", "tail = tail.prev; tail.next = null;", "head = head.next; head.prev = null;", "head.next = null; head = null;"]}, "correct": 2, "ex": "ننقل head إلى العقدة الثانية، ثم نجعل <b>head.prev = null</b> حتى لا تشير العقدة الأولى الجديدة إلى العقدة المحذوفة. الخيار الذي يستخدم tail مخصص لحذف آخر عقدة. (صفحة 11)"}, {"id": 20, "page": 11, "type": "mcq", "en": "In delete, if value is in the last node of a list with several nodes, which statements run?", "ar": "في delete، إذا كانت value في آخر عقدة من قائمة فيها عدة عقد، أي أوامر تُنفَّذ؟", "opts": {"en": ["tail = tail.next; tail.prev = null;", "tail = tail.prev; tail.next = null;", "head = head.next; head.prev = null;", "tail.prev = null; tail = null;"], "ar": ["tail = tail.next; tail.prev = null;", "tail = tail.prev; tail.next = null;", "head = head.next; head.prev = null;", "tail.prev = null; tail = null;"]}, "correct": 1, "ex": "نرجع بـ tail خطوة للخلف إلى العقدة قبل الأخيرة، ثم نجعل <b>tail.next = null</b> لتصبح هي آخر عقدة وتنفصل العقدة المحذوفة. (صفحة 11)"}, {"id": 21, "page": 12, "type": "mcq", "en": "How does the last node of a circularly linked list differ from the last node of a singly linked list?", "ar": "بماذا تختلف آخر عقدة في القائمة الدائرية عن آخر عقدة في القائمة الأحادية؟", "opts": {"en": ["It points to the previous node instead of null", "It has no next reference at all", "There is no difference; both point to null", "It points back to the first node instead of null"], "ar": ["تشير إلى العقدة السابقة بدلًا من null", "ليس لها مرجع next إطلاقًا", "لا فرق؛ كلاهما يشير إلى null", "تشير إلى العقدة الأولى بدلًا من null"]}, "correct": 3, "ex": "العقد في القائمة الدائرية من نفس نوع القائمة الأحادية، لكن بدل أن تشير آخر عقدة إلى null فإنها <b>تشير إلى العقدة الأولى</b>، ولذلك لا توجد عقدة أولى أو أخيرة حقيقية. (صفحة 12)"}, {"id": 22, "page": 12, "type": "mcq", "en": "A circularly linked list has no head or tail. Which single reference does it use to refer to a node in the list?", "ar": "القائمة الدائرية ليس فيها head ولا tail. ما المرجع الوحيد الذي تستخدمه للإشارة إلى عقدة في القائمة؟", "opts": {"en": ["head", "cursor", "tail", "top"], "ar": ["head", "cursor", "tail", "top"]}, "correct": 1, "ex": "القائمة الدائرية لها <b>مؤشر واحد يسمى cursor</b> يشير إلى أي عقدة في القائمة. (صفحة 12)"}, {"id": 23, "page": 12, "type": "mcq", "en": "What is the main benefit of a circularly linked list?", "ar": "ما الفائدة الأساسية للقائمة الدائرية؟", "opts": {"en": ["It gives direct access to any node by index", "It allows traversal in both directions", "We can keep traversing even after passing the first or last node", "It removes the need for any reference variable"], "ar": ["تعطي وصولًا مباشرًا لأي عقدة بالفهرس", "تسمح بالتمرير في الاتجاهين", "يمكننا مواصلة التمرير حتى بعد تجاوز العقدة الأولى أو الأخيرة", "تلغي الحاجة لأي متغير مرجعي"]}, "correct": 2, "ex": "لأن آخر عقدة تعود للأولى، يمكن <b>مواصلة التمرير بعد تجاوز العقدة الأولى أو الأخيرة</b>. لكنها تتحرك للأمام فقط، وليس فيها وصول مباشر بالفهرس. (صفحة 12)"}, {"id": 24, "page": 12, "type": "mcq", "en": "What must the programmer be careful about when traversing a circularly linked list?", "ar": "ما الذي يجب الانتباه إليه عند تمرير قائمة دائرية؟", "opts": {"en": ["Avoiding an infinite loop, because there is no null to stop at", "Running out of contiguous memory", "Updating prev references", "Shifting elements after each step"], "ar": ["تجنب الحلقة اللانهائية لأنه لا يوجد null ليتوقف عنده التمرير", "نفاد الذاكرة المتجاورة", "تحديث المراجع prev", "إزاحة العناصر بعد كل خطوة"]}, "correct": 0, "ex": "لأن آخر عقدة لا تشير إلى null فإن حلقة while(helpPtr != null) لن تنتهي أبدًا. يجب أن <b>يتجنب الكود الحلقة اللانهائية</b> بشرط توقف مناسب مثل العودة إلى نقطة البداية. (صفحة 12)"}, {"id": 25, "page": 13, "type": "mcq", "en": "Which statement about arrays is correct according to the chapter?", "ar": "أي عبارة عن المصفوفات صحيحة حسب الشابتر؟", "opts": {"en": ["Their size can grow when needed, and their memory is contiguous", "Their size is fixed once created, and their memory is contiguous", "Their size is fixed, but their cells are scattered in memory", "Their size can shrink but never grow"], "ar": ["حجمها يمكن أن يكبر عند الحاجة وذاكرتها متجاورة", "حجمها ثابت بعد إنشائها وذاكرتها متجاورة", "حجمها ثابت لكن خلاياها متفرقة في الذاكرة", "حجمها يمكن أن يصغر لكن لا يكبر أبدًا"]}, "correct": 1, "ex": "المصفوفة ذاكرة <b>static</b>: بعد إنشائها لا يمكن زيادة حجمها ولا تقليله، وخلاياها <b>متجاورة (contiguous)</b> أي كل خلية تأتي مباشرة بعد التي قبلها. (صفحة 13)"}, {"id": 26, "page": 13, "type": "mcq", "en": "Why is the contiguous memory of an array helpful?", "ar": "لماذا تفيد الذاكرة المتجاورة في المصفوفة؟", "opts": {"en": ["It makes insertion in the middle cheap", "It lets the array grow dynamically", "It allows direct access to any element", "It removes the need for indexes"], "ar": ["تجعل الإدراج في المنتصف رخيصًا", "تسمح للمصفوفة بالنمو ديناميكيًا", "تسمح بالوصول المباشر لأي عنصر", "تلغي الحاجة للفهارس"]}, "correct": 2, "ex": "لأن الخلايا متجاورة يمكن حساب مكان أي عنصر مباشرة من الفهرس، وهذا هو <b>الوصول المباشر (direct access)</b>. أما الإدراج في المنتصف في المصفوفة فيتطلب إزاحة العناصر. (صفحة 13)"}, {"id": 27, "page": 14, "type": "mcq", "en": "Linked list nodes are not stored contiguously in memory. What is the drawback of this?", "ar": "عقد القائمة المترابطة غير مخزنة في ذاكرة متجاورة. ما عيب ذلك؟", "opts": {"en": ["Their size must be fixed in advance", "Insertion requires shifting elements", "Every node can only be reached from the tail", "Linked lists do not have direct access"], "ar": ["حجمها يجب أن يكون ثابتًا مسبقًا", "الإدراج يتطلب إزاحة العناصر", "كل عقدة لا يمكن الوصول إليها إلا من tail", "القوائم المترابطة ليس فيها وصول مباشر"]}, "correct": 3, "ex": "العقدة لا تأتي بالضرورة بعد السابقة في الذاكرة، لذلك لا يمكن القفز مباشرة إلى عقدة بعينها: <b>لا يوجد direct access</b> ونمر على العقد واحدة تلو الأخرى. (صفحة 14)"}, {"id": 28, "page": 14, "type": "mcq", "en": "What is the MAJOR problem with arrays that linked lists avoid?", "ar": "ما المشكلة الكبرى في المصفوفات التي تتفاداها القوائم المترابطة؟", "opts": {"en": ["Being able to access elements directly", "Shifting elements when inserting or deleting", "Having a dynamic size", "Storing a reference in every element"], "ar": ["إمكانية الوصول المباشر للعناصر", "إزاحة العناصر (shifting) عند الإدراج أو الحذف", "أن يكون الحجم ديناميكيًا", "تخزين مرجع في كل عنصر"]}, "correct": 1, "ex": "الشابتر يجيب بكلمة واحدة: <b>SHIFTING!</b> في المصفوفة تحتاج إزاحة العناصر عند الإدراج والحذف، بينما في القائمة المترابطة لا إزاحة. (صفحة 14)"}, {"id": 29, "page": 14, "type": "mcq", "en": "Why are insertion and deletion cheap in linked lists?", "ar": "لماذا يكون الإدراج والحذف رخيصين في القوائم المترابطة؟", "opts": {"en": ["Every node moves one position in memory", "Only a couple of references change; no shifting is needed", "Nodes are contiguous, so copying is fast", "Arrays are used internally to give direct access"], "ar": ["لأن كل عقدة تتحرك موضعًا واحدًا في الذاكرة", "لأن بضعة مراجع فقط تتغير ولا حاجة للإزاحة", "لأن العقد متجاورة فالنسخ سريع", "لأن المصفوفات تُستخدم داخليًا للوصول المباشر"]}, "correct": 1, "ex": "في القائمة المترابطة <b>نغيّر بضعة مراجع فقط</b> (مثل next و prev) ولا نحرك بقية العقد، ولذلك لا توجد إزاحة. وهي ديناميكية أي يمكن أن يكبر حجمها أو يصغر. (صفحة 14)"}, {"id": 30, "page": 16, "type": "mcq", "en": "How do you detect an empty circularly linked list and a single-node circularly linked list?", "ar": "كيف تكتشف أن القائمة الدائرية فارغة، وأنها تحتوي عقدة واحدة فقط؟", "opts": {"en": ["cursor.next == null (empty); cursor == null (single node)", "head == tail == null (empty); head == tail (single node)", "cursor == null (empty); cursor.next == null (single node)", "cursor == null (empty); cursor.next == cursor (single node)"], "ar": ["cursor.next == null (فارغة)؛ cursor == null (عقدة واحدة)", "head == tail == null (فارغة)؛ head == tail (عقدة واحدة)", "cursor == null (فارغة)؛ cursor.next == null (عقدة واحدة)", "cursor == null (فارغة)؛ cursor.next == cursor (عقدة واحدة)"]}, "correct": 3, "ex": "القائمة الفارغة لا يشير فيها cursor إلى شيء (<b>null</b>). والعقدة الوحيدة تشير إلى نفسها لأنها الأولى والأخيرة، أي <b>cursor.next == cursor</b> وليس null. (صفحة 16)"}, {"id": 31, "page": 16, "type": "mcq", "en": "In a singly linked list, how do you check for an empty list and for a single-node list?", "ar": "في القائمة الأحادية، كيف تتحقق أن القائمة فارغة وأنها تحتوي عقدة واحدة؟", "opts": {"en": ["head == null (empty); head.next == null (single node)", "head.next == null (empty); head == null (single node)", "head == tail == null (empty); head == tail (single node)", "cursor == null (empty); cursor.next == cursor (single node)"], "ar": ["head == null (فارغة)؛ head.next == null (عقدة واحدة)", "head.next == null (فارغة)؛ head == null (عقدة واحدة)", "head == tail == null (فارغة)؛ head == tail (عقدة واحدة)", "cursor == null (فارغة)؛ cursor.next == cursor (عقدة واحدة)"]}, "correct": 0, "ex": "القائمة الأحادية الفارغة <b>head == null</b>. وإذا كان head موجودًا لكن <b>head.next == null</b> فهذه عقدة واحدة. الخيار الأخير يخص القائمة الدائرية. (صفحة 16)"}, {"id": 32, "page": 16, "type": "mcq", "en": "Which condition indicates an EMPTY doubly linked list?", "ar": "أي شرط يدل على أن القائمة المزدوجة فارغة؟", "opts": {"en": ["head == tail != null", "head.next == null", "head == tail == null", "tail.prev == null"], "ar": ["head == tail != null", "head.next == null", "head == tail == null", "tail.prev == null"]}, "correct": 2, "ex": "القائمة المزدوجة فارغة عندما <b>head == tail == null</b>. أما head == tail != null أو head.next == null أو tail.prev == null فتدل على أن فيها <b>عقدة واحدة</b>. (صفحة 16)"}, {"id": 33, "page": 17, "type": "mcq", "en": "How many references must be updated to insert a node at the head or at the end of a doubly linked list?", "ar": "كم مرجعًا يجب تحديثه عند إدراج عقدة في بداية أو نهاية القائمة المزدوجة؟", "opts": {"en": ["1", "2", "3", "4"], "ar": ["1", "2", "3", "4"]}, "correct": 2, "ex": "في addToFront نحدّث: next في العقدة الجديدة، و head.prev، و head. وكذلك في النهاية. وعند الإدراج في <b>المنتصف</b> نحدّث <b>4</b> مراجع. (صفحة 17)"}, {"id": 34, "page": 17, "type": "mcq", "en": "How many references must be updated to insert a node in the middle of a doubly linked list?", "ar": "كم مرجعًا يجب تحديثه عند إدراج عقدة في منتصف القائمة المزدوجة؟", "opts": {"en": ["2", "3", "5", "4"], "ar": ["2", "3", "5", "4"]}, "correct": 3, "ex": "في الإدراج بالمنتصف: newNode.next و newNode.prev و helpPtr.prev.next و helpPtr.prev، أي <b>4 مراجع</b>. أما الطرفان فيتطلبان 3. (صفحتان 9 و 17)"}, {"id": 35, "page": 17, "type": "mcq", "en": "In a singly linked list, how many references must be updated when removing a node?", "ar": "في القائمة الأحادية، كم مرجعًا يجب تحديثه عند حذف عقدة؟", "opts": {"en": ["1", "2", "3", "4"], "ar": ["1", "2", "3", "4"]}, "correct": 0, "ex": "الحذف في القائمة الأحادية يحتاج تحديث <b>مرجع واحد</b> (next في العقدة السابقة). الإدراج في المقدمة أو المنتصف يحتاج 2، وفي النهاية يحتاج 1. وفي المزدوجة الحذف يحتاج 2. (صفحة 17)"}, {"id": 36, "page": 17, "type": "mcq", "en": "In a circularly linked list, how many references are updated when inserting at the cursor and when removing at the cursor?", "ar": "في القائمة الدائرية، كم مرجعًا يتم تحديثه عند الإدراج عند cursor وعند الحذف عند cursor؟", "opts": {"en": ["2 for inserting, 1 for removing", "1 for inserting, 2 for removing", "3 for inserting, 2 for removing", "4 for inserting, 2 for removing"], "ar": ["2 للإدراج و 1 للحذف", "1 للإدراج و 2 للحذف", "3 للإدراج و 2 للحذف", "4 للإدراج و 2 للحذف"]}, "correct": 0, "ex": "حسب جدول الشابتر: القائمة الدائرية <b>الإدراج عند cursor = 2</b> و <b>الحذف عند cursor = 1</b>. (صفحة 17)"}, {"id": 37, "page": 18, "type": "mcq", "en": "Which type of linked list can be traversed both forward and backward?", "ar": "أي نوع من القوائم المترابطة يمكن تمريره للأمام وللخلف؟", "opts": {"en": ["Only the circularly linked list", "The singly and circularly linked lists", "All three types", "Only the doubly linked list"], "ar": ["القائمة الدائرية فقط", "القائمة الأحادية والدائرية", "الأنواع الثلاثة كلها", "القائمة المزدوجة فقط"]}, "correct": 3, "ex": "القائمة المزدوجة فقط تعرف كل عقدة فيها العقدة التالية والسابقة معًا. الأحادية والدائرية <b>forward فقط</b> لأن كل عقدة تعرف التالية فقط. (صفحة 18)"}, {"id": 38, "page": 19, "type": "mcq", "en": "What does the size() method (Exercise 1) return for an empty singly linked list?", "ar": "ماذا تُرجع الدالة size() (التمرين 1) لقائمة أحادية فارغة؟", "opts": {"en": ["1", "0", "-1", "It throws a NullPointerException"], "ar": ["1", "0", "-1", "ترمي NullPointerException"]}, "correct": 1, "ex": "الدالة تبدأ بـ size = 0 و helpPtr = head ثم تعدّ العقد في حلقة while(helpPtr != null). عندما تكون القائمة فارغة لا تدخل الحلقة أصلًا فتُرجع <b>0</b> دون أخطاء. (صفحة 19)"}, {"id": 39, "page": 20, "type": "mcq", "en": "To print a doubly linked list in reverse order (Exercise 2), where does the traversal start and which reference does it follow?", "ar": "لطباعة القائمة المزدوجة بترتيب عكسي (التمرين 2)، من أين يبدأ التمرير وأي مرجع يتبع؟", "opts": {"en": ["Start at head and follow next until null", "Start at head and follow prev until null", "Start at tail and follow next until null", "Start at tail and follow prev until null"], "ar": ["يبدأ من head ويتبع next حتى null", "يبدأ من head ويتبع prev حتى null", "يبدأ من tail ويتبع next حتى null", "يبدأ من tail ويتبع prev حتى null"]}, "correct": 3, "ex": "نبدأ بـ <b>helpPtr = tail</b> ونطبع data ثم ننتقل بـ <b>helpPtr = helpPtr.prev</b> حتى نصل إلى null بعد أول عقدة. هذه الميزة متاحة بسهولة في القائمة المزدوجة فقط. (صفحة 20)"}, {"id": 40, "page": 20, "type": "mcq", "en": "The slide declares public int printRevrse() for a method that only prints the nodes and returns nothing. What return type is appropriate?", "ar": "الشريحة تُعرّف الدالة public int printRevrse() مع أنها تطبع العقد فقط ولا تُرجع شيئًا. ما نوع الإرجاع المناسب؟", "opts": {"en": ["void", "int", "boolean", "DLLnode"], "ar": ["void", "int", "boolean", "DLLnode"]}, "correct": 0, "ex": "الدالة تنفّذ طباعة فقط ولا يوجد فيها return، لذلك النوع المناسب <b>void</b>. إبقاء int يسبب خطأ ترجمة (missing return). (صفحة 20)"}];
+const N=QUESTIONS.length;
+
+
+const successPhrases = ["أحسنتِ أبرار كمّلي يا بطلة! 🏆","ممتاز يا أبرار! أنتِ نجمة البرمجة 🌟","برافو أبرار! استمري على هذا التألق 🚀","عاشت يا وحشة! إجابة ملكية 👑","أسطورية يا أبرار! الكويز لكِ بإذن الله 💎","ما شاء الله عليكِ! عقلك برمجي ذهبي ✨"];
+const failPhrases = ["حاولي مرة أخرى يا أبرار، أنتِ تقدرين! 💪","لا بأس يا بطلة، ركّزي وحاولي مجددًا 🔄","قريب جدًا! المحاولة القادمة لكِ يا أبرار 🎯","الفشل أول خطوة للنجاح، حاولي مرة أخرى ❤️‍🔥"];
+let qi=0;
+let state = QUESTIONS.map(()=>({chosen:null,first:null,attempts:0,done:false,skipped:false,firstCorrect:null}));
+let translated = new Set();
+let translateAll=false;
+let bookmarked=new Set();
+let mode='train';
+let soundOn=true;
+let xp=0, streak=0, bestStreak=0, correctFirst=0;
+let seconds=0, timerInt=null, started=false;
+let filter='all', showOnlyWrong=false;
+let audioCtx=null;
+let charts=[];
+
+/* AUDIO */
+function ctx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+function tone(f,t,d,type='sine',v=.22,when=0){ if(!soundOn) return; try{ const c=ctx(),o=c.createOscillator(),g=c.createGain(); o.type=type;o.frequency.value=f; const s=c.currentTime+when; g.gain.setValueAtTime(0.0001,s); g.gain.exponentialRampToValueAtTime(v,s+.02); g.gain.exponentialRampToValueAtTime(0.0001,s+d); o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d+.05);}catch(e){} }
+function playClick(){ tone(600,0,.12,'sine',.12); }
+function playSuccess(){ if(!soundOn) return; [523,659,784,1046,1318].forEach((f,i)=>tone(f,0,.35,'triangle',.22,i*.09)); tone(2093,0,.5,'sine',.12,.5); setTimeout(()=>{ [1046,1318,1568].forEach((f,i)=>tone(f,0,.3,'sine',.15,i*.07)); },450); }
+function playFail(){ if(!soundOn) return; tone(220,0,.3,'sawtooth',.12); tone(174,0,.4,'sawtooth',.12,.15); }
+function playFinish(){ if(!soundOn) return; [523,523,523,659,784,1046,784,1046,1318,1568,2093].forEach((f,i)=>tone(f,0,.35,'triangle',.2,i*.13)); }
+function toggleSound(){ soundOn=!soundOn; document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇'; if(soundOn) playClick(); toast(soundOn?'🔊 تم تفعيل الأصوات التحفيزية':'🔇 تم كتم الصوت'); }
+
+/* HELPERS */
+function scrollToQuiz(){ document.getElementById('quizSection').scrollIntoView({behavior:'smooth'}); if(!started) startTimer(); playClick(); }
+function setMode(m){ mode=m; playClick(); const t=document.getElementById('modeTrain'),e=document.getElementById('modeExam'); if(m==='train'){ t.classList.add('border-[#D4AF37]'); t.classList.remove('border-transparent'); e.classList.remove('border-[#D4AF37]'); e.classList.add('border-transparent'); t.querySelector('div:last-child').textContent='● مُفعّل الآن'; t.querySelector('div:last-child').className='text-[11px] mt-2 font-black text-green-400'; document.getElementById('examLabel').textContent='○ اضغطي للتفعيل'; document.getElementById('examLabel').className='text-[11px] mt-2 font-black text-white/40'; toast('🎓 وضع التدريب: يمكنكِ المحاولة مجددًا للتعلم'); } else { e.classList.add('border-[#D4AF37]'); e.classList.remove('border-transparent'); t.classList.remove('border-[#D4AF37]'); t.classList.add('border-transparent'); document.getElementById('examLabel').textContent='● مُفعّل الآن'; document.getElementById('examLabel').className='text-[11px] mt-2 font-black text-green-400'; toast('⏱️ وضع الكويز الحقيقي: محاولة واحدة فقط يا بطلة!'); } }
+function startTimer(){ if(started) return; started=true; timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,'0'),s=String(seconds%60).padStart(2,'0'); document.getElementById('timerHero').textContent=`${m}:${s}`; },1000); }
+function fmt(s){ return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+function toast(msg){ const w=document.getElementById('toastWrap'); const d=document.createElement('div'); d.className='toast pointer-events-auto glass gold-border rounded-2xl px-5 py-3 font-bold text-sm text-center shadow-2xl'; d.innerHTML=msg; w.appendChild(d); setTimeout(()=>{ d.style.opacity='0'; d.style.transform='translateY(10px)'; setTimeout(()=>d.remove(),400); },2600); }
+function goldConfettiBig(){ const end=Date.now()+1200; (function f(){ confetti({particleCount:6,angle:60,spread:60,origin:{x:0},colors:['#D4AF37','#F5D67B','#FFF6C8','#fff']}); confetti({particleCount:6,angle:120,spread:60,origin:{x:1},colors:['#D4AF37','#F5D67B','#FFF6C8','#fff']}); if(Date.now()<end) requestAnimationFrame(f); })(); confetti({particleCount:120,spread:100,origin:{y:.6},colors:['#D4AF37','#F5D67B','#ffffff','#22c55e']}); }
+function smallConfetti(){ confetti({particleCount:45,spread:70,origin:{y:.7},colors:['#D4AF37','#F5D67B','#fff','#22c55e']}); }
+
+/* RENDER */
+function renderQuestion(){
+const q=QUESTIONS[qi], st=state[qi];
+document.getElementById('qCounter').textContent=`السؤال ${qi+1} / ${N}`;
+document.getElementById('heroQpos').textContent=qi+1;
+document.getElementById('qPageBadge').textContent=`📄 صفحة ${q.page}`;
+document.getElementById('qTypeBadge').textContent=q.type==='tf'?'صح / خطأ • True / False':'اختياري • Multiple Choice';
+document.getElementById('qEn').innerHTML=`<span class="text-[#F5D67B] font-black">Q${q.id}.</span> ${q.en}`;
+const showTr = translateAll || translated.has(qi);
+document.getElementById('qArBox').classList.toggle('hidden',!showTr);
+document.getElementById('qAr').textContent=q.ar;
+document.getElementById('trBtn').textContent=showTr?'🙈 إخفاء الترجمة':'🌐 ترجم';
+document.getElementById('trBtn').className=showTr?'rounded-xl px-4 py-2.5 font-black text-sm bg-white/15 border border-[#D4AF37]':'rounded-xl px-4 py-2.5 font-black text-sm btn-gold';
+document.getElementById('bmBtn').textContent=bookmarked.has(qi)?'⭐':'🤍';
+const ab=document.getElementById('attemptBadge');
+if(st.attempts>0 && !st.done){ ab.classList.remove('hidden'); ab.textContent=`🔄 المحاولة ${st.attempts+1}`; } else ab.classList.add('hidden');
+const grid=document.getElementById('optsGrid'); grid.innerHTML='';
+const letters=q.type==='tf'?['✓','✕']:['A','B','C','D'];
+q.opts.en.forEach((oe,i)=>{
+const b=document.createElement('button'); b.className='opt'; b.id=`opt${i}`;
+const isCorrectOpt = st.done && i===q.correct;
+const isWrongChosen = st.done && st.first!==null && st.chosen===i && i!==q.correct && mode==='exam';
+const isDisabledWrong = mode==='train' && st.wrongTried && st.wrongTried.includes(i);
+if(isCorrectOpt) b.classList.add('correct');
+if(isWrongChosen) b.classList.add('wrong');
+if(isDisabledWrong){ b.classList.add('dim'); b.disabled=true; }
+if(st.done && mode==='exam') b.disabled=true;
+if(st.done && mode==='train' && st.finalDone) b.disabled=true;
+b.innerHTML=`<span class="opt-letter">${letters[i]}</span><span class="flex-1"><span dir="ltr" class="block text-left font-pop font-semibold leading-7">${oe}</span><span class="block mt-1 text-[13px] font-bold ${showTr?'':'hidden'} text-[#F5D67B] opt-ar-trans">${q.opts.ar[i]}</span></span><span class="text-xl result-ico">${isCorrectOpt?'✅':(isWrongChosen?'❌':'')}</span>`;
+b.onclick=()=>answer(i);
+grid.appendChild(b);
+});
+// feedback
+const fb=document.getElementById('feedbackBox'), ex=document.getElementById('explainBox');
+fb.classList.add('hidden'); ex.classList.add('hidden');
+if(st.done){
+if(st.firstCorrect){ fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-ok'; fb.innerHTML=`🎉 ${st.successMsg||'أحسنتِ أبرار كمّلي يا بطلة! 🏆'}<div class="text-xs font-bold text-green-200 mt-1">إجابة صحيحة من ${st.attempts===0?'أول محاولة':'المحاولة '+(st.attempts+1)} • +${st.attempts===0?10:5} XP</div>`; }
+else if(mode==='exam'){ fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-bad'; fb.innerHTML=`💪 حاولي مرة أخرى يا أبرار في السؤال القادم!<div class="text-sm mt-1">الإجابة الصحيحة: <b class="text-green-300">${q.opts.en[q.correct]}</b> • <b class="text-[#F5D67B]">${q.opts.ar[q.correct]}</b></div>`; }
+showExplain();
+if(st.finalDone && !st.firstCorrect){ fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-ok'; fb.innerHTML=`👏 أحسنتِ أبرار! وصلتِ للصح بعد التعلم 💡<div class="text-xs mt-1 text-white/70">أول إجابة كانت خاطئة (محسوبة للمراجعة) لكن إصرارك بطولي — أكملي!</div>`; }
+} else if(st.attempts>0){
+fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-bad'; fb.innerHTML=`${failPhrases[st.attempts%failPhrases.length]}<div class="text-sm text-white/70 mt-1">اختاري إجابة أخرى يا بطلة — أنتِ تقدرين! 🔥</div>`;
+}
+updateProgress(); renderPalette();
+document.getElementById('qCard').classList.remove('shake');
+}
+function showExplain(){ const q=QUESTIONS[qi]; const ex=document.getElementById('explainBox'); ex.classList.remove('hidden'); ex.innerHTML=`<b class="text-[#F5D67B]">💡 الشرح الذهبي:</b> ${q.ex}<div class="mt-1 text-xs text-white/60">النموذجية: <b dir="ltr" class="text-green-300">${q.opts.en[q.correct]}</b> — <b class="text-[#F5D67B]">${q.opts.ar[q.correct]}</b></div>`; }
+
+function answer(i){
+startTimer(); playClick();
+const q=QUESTIONS[qi], st=state[qi];
+if(st.done && (mode==='exam' || st.finalDone)) return;
+if(st.wrongTried && st.wrongTried.includes(i)) return;
+if(st.first===null){ st.first=i; st.attempts=0; }
+else { st.attempts++; }
+if(i===q.correct){
+// correct
+if(st.first===i){ st.firstCorrect=true; correctFirst++; streak++; bestStreak=Math.max(bestStreak,streak); xp+=10; st.successMsg=successPhrases[Math.floor(Math.random()*successPhrases.length)]; }
+else { st.firstCorrect=false; streak=0; xp+=5; if(!st.successMsg) st.successMsg=successPhrases[Math.floor(Math.random()*successPhrases.length)]; }
+st.chosen=i; st.done=true; st.finalDone=true;
+playSuccess(); smallConfetti();
+if(streak>0 && streak%5===0){ goldConfettiBig(); showCheer(`🔥 سلسلة نارية ${streak} إجابات!`,`واصلي يا أبرار! أنتِ تقتربين من العلامة الكاملة بسرعة الصاروخ 🚀`); }
+else if(st.first===i && Math.random()<.28){ goldConfettiBig(); }
+toast(`✅ <span class="gold-text">أحسنتِ أبرار كمّلي يا بطلة!</span> 🏆`);
+document.getElementById('qCard').classList.add('pop');
+} else {
+// wrong
+playFail();
+document.getElementById('qCard').classList.remove('shake'); void document.getElementById('qCard').offsetWidth; document.getElementById('qCard').classList.add('shake');
+if(mode==='exam'){ st.chosen=i; st.firstCorrect=false; st.done=true; st.finalDone=true; streak=0; toast(`❌ <b>حاولي مرة أخرى</b> يا أبرار في القادم! 💪`); }
+else {
+if(!st.wrongTried) st.wrongTried=[];
+st.wrongTried.push(i);
+if(st.first!==i || true){ if(st.wrongTried.length>= 2 && q.type!=='tf' && st.wrongTried.length>=3){ st.chosen=q.correct; st.done=true; st.finalDone=true; st.firstCorrect=false; streak=0; } }
+toast(`❌ <b>حاولي مرة أخرى</b> يا أبرار! 🔄`);
+if(q.type==='tf'){ /* second try will be correct */ }
+}
+}
+updateHUD(); renderQuestion();
+if(state[qi].done){ setTimeout(()=>{ if(qi<N-1 && document.getElementById('reportSection').classList.contains('hidden')){ /* stay, let user click next */ } },600); }
+}
+function nextQ(){ playClick(); if(qi<N-1){ qi++; renderQuestion(); document.getElementById('quizSection').scrollIntoView({behavior:'smooth',block:'start'}); } else toast('🏁 هذا آخر سؤال — اضغطي إنهاء لعرض تقريرك الملكي'); }
+function prevQ(){ playClick(); if(qi>0){ qi--; renderQuestion(); } }
+function skipQ(){ playClick(); state[qi].skipped=true; toast('⏭️ تم تخطي السؤال — يمكنك العودة له من الخريطة'); if(qi<N-1){ qi++; renderQuestion(); } updateProgress(); renderPalette(); }
+function toggleTranslateCurrent(){ playClick(); if(translated.has(qi)) translated.delete(qi); else translated.add(qi); renderQuestion(); }
+function translateAllToggle(){ playClick(); translateAll=!translateAll; toast(translateAll?'🌐 تم تفعيل الترجمة العربية لجميع الأسئلة بجانب الإنجليزية':'🌐 تم إخفاء الترجمات'); renderQuestion(); }
+function toggleBookmark(){ playClick(); if(bookmarked.has(qi)) bookmarked.delete(qi); else { bookmarked.add(qi); toast('⭐ تمت الإضافة للمفضلة'); } renderQuestion(); renderPalette(); }
+function reviewBookmarks(){ playClick(); if(bookmarked.size===0){ toast('⭐ لا توجد أسئلة مفضلة بعد — اضغطي 🤍 لحفظ سؤال'); return; } filter='bm'; renderPalette(); document.getElementById('paletteCard').scrollIntoView({behavior:'smooth'}); }
+function setFilter(f){ playClick(); filter=f; document.querySelectorAll('.filter-btn').forEach(b=>{ if(b.dataset.f===f){ b.className='filter-btn px-3 py-1.5 rounded-lg bg-[#D4AF37] text-black'; } else { b.className='filter-btn px-3 py-1.5 rounded-lg bg-white/10'; } }); renderPalette(); }
+function updateHUD(){ document.getElementById('hdrScore').textContent=xp; document.getElementById('statCorrect').textContent=correctFirst; const wrongFirst=state.filter(s=>s.firstCorrect===false).length; document.getElementById('statWrong').textContent=wrongFirst; document.getElementById('statStreak').textContent=streak+' 🔥'; document.getElementById('xpNum').textContent=xp; const lvl=Math.floor(xp/100)+1; document.getElementById('levelNum').textContent=lvl; document.getElementById('xpBar').style.width=((xp%100))+'%'; }
+function updateProgress(){ const answered=state.filter(s=>s.done).length; const pct=Math.round(answered/N*100); document.getElementById('quizProgress').style.width=Math.max(2,pct)+'%'; document.getElementById('topProgress').style.width=pct+'%'; }
+function renderPalette(){ const p=document.getElementById('palette'); p.innerHTML=''; QUESTIONS.forEach((q,idx)=>{ const st=state[idx]; let show=true; if(filter==='ok' && !(st.done&&st.firstCorrect)) show=false; if(filter==='bad' && !(st.done&&st.firstCorrect===false)) show=false; if(filter==='un' && st.done) show=false; if(filter==='bm' && !bookmarked.has(idx)) show=false; if(!show) return; const b=document.createElement('button'); b.textContent=idx+1; b.className='pal-btn'+(idx===qi?' current':'')+((st.done&&st.firstCorrect)?' ok':(st.done&&st.firstCorrect===false)?' bad':(st.skipped&&!st.done)?' skip':''); if(bookmarked.has(idx)) b.textContent+='•'; b.title=`Q${idx+1} - صفحة ${q.page}`; b.onclick=()=>{ playClick(); qi=idx; renderQuestion(); }; p.appendChild(b); }); }
+
+/* CHEER */
+function showCheer(t,s){ document.getElementById('bigCheerTitle').textContent=t; document.getElementById('bigCheerSub').textContent=s; const o=document.getElementById('bigCheer'); o.classList.remove('hidden'); o.classList.add('flex'); }
+function closeCheer(){ const o=document.getElementById('bigCheer'); o.classList.add('hidden'); o.classList.remove('flex'); playClick(); }
+
+/* FINISH & REPORT */
+function confirmFinish(){ playClick(); const un=state.filter(s=>!s.done).length; if(un>0){ if(!confirm(`يا أبرار، لديكِ ${un} سؤالًا غير مجاب. هل تريدين إنهاء الاختبار وعرض النتيجة الآن؟`)) return; } finish(); }
+function finish(){ clearInterval(timerInt); playFinish(); goldConfettiBig(); setTimeout(goldConfettiBig,800);
+const correct=state.filter(s=>s.firstCorrect===true).length;
+const wrong=state.filter(s=>s.firstCorrect===false).length;
+const skipped=state.filter(s=>!s.done).length;
+const pct=Math.round(correct/N*100);
+document.getElementById('reportSection').classList.remove('hidden');
+document.getElementById('rCorrect').textContent=correct;
+document.getElementById('rWrong').textContent=wrong;
+document.getElementById('rTime').textContent=fmt(seconds);
+document.getElementById('rStreak').textContent=bestStreak+' 🔥';
+document.getElementById('finalPct').textContent=pct+'%';
+document.getElementById('reportSubtitle').textContent=`أكملت ${N} سؤالًا في ${fmt(seconds)} • صح من أول مرة: ${correct} • تحتاج مراجعة: ${wrong} • متخطّى: ${skipped}`;
+let grade,msg;
+if(pct>=90){ grade='🏆 ممتاز مع مرتبة الشرف'; msg=`أسطورية يا أبرار! ${correct}/${N} من أول مرة — أحسنتِ كمّلي يا بطلة! أنتِ جاهزة للكويز بنسبة 100% 👑🔥`; }
+else if(pct>=80){ grade='🌟 ممتاز'; msg=`رائع يا أبرار! ${correct}/${N} — أحسنتِ كمّلي يا بطلة! مراجعة سريعة للأخطاء وستكون علامتك كاملة 💎`; }
+else if(pct>=70){ grade='👏 جيد جدًا'; msg=`أداء بطولي يا أبرار! ${correct}/${N} — استمري! راجعي الأسئلة الخاطئة بالأسفل وستتفوقين 🚀`; }
+else if(pct>=60){ grade='💪 جيد'; msg=`بداية قوية يا أبرار! ${correct}/${N} — حاولي مرة أخرى وستتحسنين كثيرًا! راجعي الشرح لكل سؤال 📚`; }
+else { grade='📚 تحتاج تدريبًا'; msg=`لا تستسلمي يا بطلة! ${correct}/${N} — كل عظيم بدأ من هنا. راجعي الأخطاء ثم أعيدي الاختبار وستبهرين الجميع ❤️‍🔥`; }
+document.getElementById('gradeBadge').textContent=grade;
+const fm=document.getElementById('finalMessage'); fm.textContent=msg;
+const circ=document.getElementById('scoreCircle'); const off=326.7-(326.7*pct/100); setTimeout(()=>circ.style.strokeDashoffset=off,300);
+let best=parseInt(localStorage.getItem('abrar_best_linkedlists')||'0'); if(pct>best){ localStorage.setItem('abrar_best_linkedlists',pct); best=pct; toast('🎉 رقم قياسي جديد! best: '+pct+'%'); }
+document.getElementById('bestScoreHero').textContent=best+'%';
+showCheer(pct>=60?'أحسنتِ أبرار كمّلي يا بطلة! 🏆':'حاولي مرة أخرى يا بطلة! 💪', msg);
+renderReportList(); drawCharts(correct,wrong,skipped);
+document.getElementById('reportSection').scrollIntoView({behavior:'smooth'});
+}
+function toggleWrongBtn(btn){ document.querySelectorAll('#reportSection .no-print button').forEach(b=>b.classList.replace('btn-gold','btn-ghost')); }
+function renderReportList(){
+const wrap=document.getElementById('reportList'); wrap.innerHTML='';
+QUESTIONS.forEach((q,idx)=>{
+const st=state[idx];
+const isOk=st.firstCorrect===true, isBad=st.firstCorrect===false, isSkip=!st.done;
+if(showOnlyWrong && !isBad) return;
+const userTxt = st.first===null?'— لم يُجب —':`${q.opts.en[st.first]} — ${q.opts.ar[st.first]}`;
+const modelTxt=`${q.opts.en[q.correct]} — ${q.opts.ar[q.correct]}`;
+const card=document.createElement('div');
+card.className=`glass rounded-2xl p-5 border-r-8 ${isOk?'!border-green-500':isBad?'!border-red-500':'!border-yellow-500'}`;
+card.innerHTML=`
+<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-black btn-gold rounded-lg px-3 py-1 text-sm">Q${q.id}</span>
+<span class="text-xs font-bold bg-white/10 rounded-lg px-3 py-1">📄 صفحة ${q.page}</span>
+<span class="text-xs font-bold rounded-lg px-3 py-1 ${q.type==='tf'?'bg-purple-500/20 text-purple-200':'bg-blue-500/20 text-blue-200'}">${q.type==='tf'?'صح / خطأ':'اختياري'}</span>
+${bookmarked.has(idx)?'<span class="text-xs">⭐</span>':''}
+</div>
+<span class="font-black text-sm px-4 py-1.5 rounded-full ${isOk?'bg-green-500/20 text-green-300 border border-green-500':isBad?'bg-red-500/20 text-red-300 border border-red-500':'bg-yellow-500/20 text-yellow-200 border border-yellow-500'}">${isOk?'✅ صح':'❌ خطأ / مراجعة'}</span>
+</div>
+<div dir="ltr" class="text-left font-pop font-semibold mt-3 leading-7 text-[15px]">${q.en}</div>
+<div class="ar-box p-3 mt-2 text-sm font-bold leading-7">🇸🇦 ${q.ar}</div>
+<div class="grid md:grid-cols-2 gap-3 mt-3 text-sm">
+<div class="rounded-xl p-3 border ${isOk?'bg-green-500/10 border-green-500/40':'bg-red-500/10 border-red-500/40'}"><div class="text-xs font-black opacity-70">إجابة أبرار (أول محاولة):</div><div class="font-bold mt-1" dir="ltr">${st.first===null?'—':q.opts.en[st.first]}</div><div class="font-bold text-[#F5D67B]">${st.first===null?'لم يُجب':q.opts.ar[st.first]}</div></div>
+<div class="rounded-xl p-3 bg-green-500/10 border border-green-500/40"><div class="text-xs font-black text-green-300">✅ الإجابة النموذجية:</div><div class="font-bold mt-1" dir="ltr">${q.opts.en[q.correct]}</div><div class="font-bold text-[#F5D67B]">${q.opts.ar[q.correct]}</div></div>
+</div>
+<div class="mt-2 text-xs leading-6 bg-black/30 rounded-xl p-3 border border-white/10">💡 <b>الشرح:</b> ${q.ex} ${st.attempts>0?`• عدد المحاولات: ${st.attempts+1}`:''}</div>
+<div class="flex gap-2 mt-3 no-print">
+<button onclick="goToQ(${idx})" class="btn-ghost rounded-lg px-4 py-2 text-xs font-bold">🔁 العودة للسؤال</button>
+<button onclick="toggleBmReport(${idx},this)" class="btn-ghost rounded-lg px-4 py-2 text-xs font-bold">${bookmarked.has(idx)?'⭐ مفضلة':'🤍 حفظ'}</button>
+</div>`;
+wrap.appendChild(card);
+});
+if(wrap.children.length===0){ wrap.innerHTML=`<div class="glass rounded-2xl p-10 text-center font-black text-green-300 text-xl">🎉 لا توجد أخطاء يا بطلة! كل إجاباتك صحيحة — أحسنتِ أبرار! 👑</div>`; }
+}
+function goToQ(i){ qi=i; renderQuestion(); document.getElementById('quizSection').scrollIntoView({behavior:'smooth'}); playClick(); }
+function toggleBmReport(i,btn){ if(bookmarked.has(i)) bookmarked.delete(i); else bookmarked.add(i); renderReportList(); renderPalette(); playClick(); }
+function drawCharts(c,w,s){ charts.forEach(ch=>ch.destroy()); charts=[]; charts.push(new Chart(document.getElementById('chartDoughnut'),{type:'doughnut',data:{labels:['صحيحة','تحتاج مراجعة','متخطّى'],datasets:[{data:[c,w,s],backgroundColor:['#22c55e','#ef4444','#D4AF37'],borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#fff',font:{family:'Cairo',weight:'bold'}}}}}}));
+const G=[[0,20],[20,29],[29,40]]; const ok=G.map(g=>state.slice(g[0],g[1]).filter(x=>x.firstCorrect===true).length); const tot=G.map(g=>g[1]-g[0]);
+charts.push(new Chart(document.getElementById('chartBars'),{type:'bar',data:{labels:['القوائم المزدوجة Q1-20','الدائرية والمصفوفات Q21-29','مراجعة وتمارين Q30-40'],datasets:[{label:'صحيحة',data:ok,backgroundColor:'#22c55e',borderRadius:10},{label:'خاطئة/متخطّى',data:tot.map((t,i)=>t-ok[i]),backgroundColor:'#ef4444',borderRadius:10}]},options:{scales:{x:{ticks:{color:'#fff'}},y:{ticks:{color:'#fff'},beginAtZero:true,max:20}},plugins:{legend:{labels:{color:'#fff'}}}}})); }
+function restartQuiz(){ if(!confirm('هل تريدين إعادة الاختبار من جديد يا أبرار؟')) return; state=QUESTIONS.map(()=>({chosen:null,first:null,attempts:0,done:false,skipped:false,firstCorrect:null})); qi=0; xp=0; streak=0; bestStreak=0; correctFirst=0; seconds=0; started=false; clearInterval(timerInt); document.getElementById('timerHero').textContent='00:00'; document.getElementById('reportSection').classList.add('hidden'); showOnlyWrong=false; updateHUD(); renderQuestion(); scrollToQuiz(); toast('🔄 بداية جديدة موفقة يا بطلة!'); }
+function shareResult(){ const c=state.filter(s=>s.firstCorrect).length; const t=`🏆 نتيجة البطلة أبرار الحربي في مراجعة Circularly and Doubly Linked Lists: ${c}/${N} (${Math.round(c/N*100)}%) — أحسنتِ أبرار كمّلي يا بطلة! 👑`; if(navigator.share){ navigator.share({title:'نتيجتي',text:t}).catch(()=>{}); } else { navigator.clipboard.writeText(t).then(()=>toast('📋 تم نسخ النتيجة للمشاركة!')); } }
+
+
+/* WHATSAPP REPORT TO DR. MOHAMMED */
+const DR_WA='966540058614';
+function sendWhatsApp(){
+ const c=state.filter(x=>x.firstCorrect===true).length;
+ const w=state.filter(x=>x.firstCorrect===false).length;
+ const sk=state.filter(x=>!x.done).length;
+ const total=QUESTIONS.length;
+ const pct=Math.round(c/total*100);
+ const L=['A','B','C','D'];
+ const sh=(q,i)=> i===null||i===undefined ? '—' : L[i];
+ const wrongLines=[];
+ QUESTIONS.forEach((q,idx)=>{ const st=state[idx]; if(st.firstCorrect!==true){ wrongLines.push('Q'+q.id+' (ص'+q.page+'): '+sh(q,st.first)+' ← الصحيح: '+sh(q,q.correct)); } });
+ let txt='السلام عليكم دكتور محمد 👋\n';
+ txt+='تقرير مراجعة Circularly and Doubly Linked Lists – COCS-304 Data Structures\n';
+ txt+='الطالبة: أبرار الحربي\n';
+ txt+='━━━━━━━━━━\n';
+ txt+='النتيجة (من أول إجابة): '+c+' / '+total+' ('+pct+'%)\n';
+ txt+='✅ صحيحة: '+c+'  ❌ خاطئة: '+w+'  ⏭️ متخطّاة: '+sk+'\n';
+ txt+='⏱️ الزمن: '+fmt(seconds)+'  🔥 أفضل سلسلة: '+bestStreak+'\n';
+ txt+='━━━━━━━━━━\n';
+ if(wrongLines.length){ txt+='الأسئلة التي تحتاج مراجعة ('+wrongLines.length+'):\n'+wrongLines.join('\n')+'\n'; }
+ else { txt+='🎉 أجبت على جميع الأسئلة بشكل صحيح من أول مرة!\n'; }
+ const url='https://wa.me/'+DR_WA+'?text='+encodeURIComponent(txt);
+ const win=window.open(url,'_blank');
+ if(!win){ location.href=url; }
+}
+
+/* BG STARS */
+(function(){ const cv=document.getElementById('stars'),cx=cv.getContext('2d'); let W,H,pts=[]; function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight; pts=Array.from({length:110},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+.4,s:Math.random()*.4+.1,g:Math.random()>.85})); } rs(); addEventListener('resize',rs); (function an(){ cx.clearRect(0,0,W,H); pts.forEach(p=>{ p.y-=p.s; if(p.y<0)p.y=H; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fillStyle=p.g?'rgba(245,214,123,.9)':'rgba(255,255,255,.5)'; cx.fill(); }); requestAnimationFrame(an); })(); })();
+
+/* KEYBOARD */
+document.addEventListener('keydown',e=>{ if(!document.getElementById('reportSection').classList.contains('hidden') && e.key==='Escape') closeCheer(); if(e.key>='1'&&e.key<='4'){ const q=QUESTIONS[qi]; const idx=parseInt(e.key)-1; if(idx<q.opts.en.length) answer(idx); } if(e.key==='t'||e.key==='T'||e.key==='f'||e.key==='F') toggleTranslateCurrent(); if(e.key==='ArrowLeft') nextQ(); if(e.key==='ArrowRight') prevQ(); });
+
+/* INIT */
+window.onload=function(){
+let p=0; const li=setInterval(()=>{ p+=12; document.getElementById('loadBar').style.width=Math.min(100,p)+'%'; if(p>=100){ clearInterval(li); setTimeout(()=>{ document.getElementById('preloader').style.opacity='0'; setTimeout(()=>document.getElementById('preloader').remove(),700); },300); } },120);
+document.getElementById('bestScoreHero').textContent=(localStorage.getItem('abrar_best_linkedlists')||'0')+'%';
+updateHUD(); renderQuestion(); renderPalette();
+setTimeout(()=>toast('👑 أهلًا أبرار! اضغطي <b>🌐 ترجم</b> بجانب أي سؤال لرؤية الترجمة العربية فورًا'),1800);
+};
+</script>
+</body>
+</html>
